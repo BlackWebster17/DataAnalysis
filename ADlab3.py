@@ -48,7 +48,7 @@ class SetData(server.App):
         "type": "hidden",
         "id": "update_data"
     }]
-
+    # Вкладки веб-сторінки
     tabs = ["Графік", "Таблиця"]
 
     outputs = [

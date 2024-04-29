@@ -37,7 +37,7 @@ y = harmonic_with_noise(t, initial_amplitude, initial_frequency, initial_phase, 
 l, = plt.plot(t, y, lw=2, color='orange')
 
 # Створення слайдерів
-axcolor = 'lightgoldenrodyellow'
+axcolor = 'lightblue'
 ax_amplitude = plt.axes([0.1, 0.3, 0.65, 0.03], facecolor=axcolor)
 ax_frequency = plt.axes([0.1, 0.25, 0.65, 0.03], facecolor=axcolor)
 ax_phase = plt.axes([0.1, 0.2, 0.65, 0.03], facecolor=axcolor)

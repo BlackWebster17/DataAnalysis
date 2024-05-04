@@ -14,9 +14,9 @@ def harmonic_with_noise(t, amplitude, frequency, phase, noise_mean, noise_covari
     signal = amplitude * np.sin(2 * np.pi * frequency * t + phase)
     if show_noise:
         noise = np.random.normal(noise_mean, np.sqrt(noise_covariance), len(t))
-        return signal + noise
+        return signal + noise, signal
     else:
-        return signal
+        return signal, signal
 
 def filter_signal(signal, cutoff_frequency, fs=100):
     nyquist = 0.5 * fs
@@ -25,12 +25,18 @@ def filter_signal(signal, cutoff_frequency, fs=100):
     filtered_signal = filtfilt(b, a, signal)
     return filtered_signal
 
+# Keeping track of previous noise and its parameters
+previous_noise = None
+previous_noise_mean = None
+previous_noise_covariance = None
+
 fig, ax = plt.subplots()
 plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.4)
 
 t = np.arange(0.0, 10.0, 0.01)
-y = harmonic_with_noise(t, initial_amplitude, initial_frequency, initial_phase, initial_noise_mean, initial_noise_covariance, True)
-l, = plt.plot(t, y, lw=2, color='orange')
+y_noise, y_harmonic = harmonic_with_noise(t, initial_amplitude, initial_frequency, initial_phase, initial_noise_mean, initial_noise_covariance, True)
+l_noise, = plt.plot(t, y_noise, lw=2, color='orange', label='Signal with Noise')
+l_harmonic, = plt.plot(t, y_harmonic, lw=2, color='blue', linestyle='--', label='Pure Harmonic')
 
 axcolor = 'lightblue'
 ax_amplitude = plt.axes([0.1, 0.3, 0.65, 0.03], facecolor=axcolor)
@@ -59,10 +65,24 @@ def update(val):
     cutoff_frequency = s_cutoff_frequency.val
     show_noise = check.lines[0][0].get_visible()
 
-    y = harmonic_with_noise(t, amplitude, frequency, phase, noise_mean, noise_covariance, show_noise)
-    l.set_ydata(y)
+    global previous_noise, previous_noise_mean, previous_noise_covariance
 
-    filtered_signal = filter_signal(y, cutoff_frequency)
+    if (noise_mean != previous_noise_mean or
+        noise_covariance != previous_noise_covariance):
+        
+        previous_noise_mean = noise_mean
+        previous_noise_covariance = noise_covariance
+
+        previous_noise = np.random.normal(noise_mean, np.sqrt(noise_covariance), len(t))
+
+    y_noise, y_harmonic = amplitude * np.sin(2 * np.pi * frequency * t + phase), amplitude * np.sin(2 * np.pi * frequency * t + phase)
+
+    if show_noise:
+        y_noise += previous_noise
+
+    l_noise.set_ydata(y_noise)
+
+    filtered_signal = filter_signal(y_noise, cutoff_frequency)
     l_filtered.set_ydata(filtered_signal)
 
     l_filtered.set_visible(show_noise)
@@ -76,7 +96,7 @@ s_noise_mean.on_changed(update)
 s_noise_covariance.on_changed(update)
 s_cutoff_frequency.on_changed(update)
 
-filtered_signal = filter_signal(y, initial_cutoff_frequency)
+filtered_signal = filter_signal(y_noise, initial_cutoff_frequency)
 l_filtered, = ax.plot(t, filtered_signal, lw=2, color='purple', visible=True)
 
 def reset(event):
@@ -91,4 +111,5 @@ resetax = plt.axes([0.05, 0.01, 0.1, 0.02])
 button = Button(resetax, 'Reset', color=axcolor, hovercolor='0.975')
 button.on_clicked(reset)
 
+plt.legend()
 plt.show()

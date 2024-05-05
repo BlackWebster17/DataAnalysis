@@ -36,7 +36,10 @@ plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.4)
 t = np.arange(0.0, 10.0, 0.01)
 y_noise, y_harmonic = harmonic_with_noise(t, initial_amplitude, initial_frequency, initial_phase, initial_noise_mean, initial_noise_covariance, True)
 l_noise, = plt.plot(t, y_noise, lw=2, color='orange', label='Signal with Noise')
+
+# Plot for pure harmonic
 l_harmonic, = plt.plot(t, y_harmonic, lw=2, color='blue', linestyle='--', label='Pure Harmonic')
+l_harmonic.set_visible(False)
 
 axcolor = 'lightblue'
 ax_amplitude = plt.axes([0.1, 0.3, 0.65, 0.03], facecolor=axcolor)
@@ -81,11 +84,13 @@ def update(val):
         y_noise += previous_noise
 
     l_noise.set_ydata(y_noise)
+    l_harmonic.set_ydata(y_harmonic)
 
     filtered_signal = filter_signal(y_noise, cutoff_frequency)
     l_filtered.set_ydata(filtered_signal)
 
     l_filtered.set_visible(show_noise)
+    l_harmonic.set_visible(show_noise)
 
     fig.canvas.draw_idle()
 
